@@ -24,13 +24,13 @@ namespace ExaltAccountManager.Core.Util
             return Encoding.UTF8.GetString(data);
         }
 
-        public async static void LaunchExaltClient(string exaltPath, string email, string password)
+        public async static void LaunchExaltClient(string exaltPath, string email, string password, string manualDeviceToken)
         {
-            var deviceToken = GetDeviceToken();
+            var deviceToken = string.IsNullOrEmpty(manualDeviceToken) ? GetDeviceToken() : manualDeviceToken;
             // get access token         
             AccessTokenRequest accessTokenRequest = new(email, password, deviceToken);
             AccessTokenResponse accessTokenResponse = await RequestHelper.RequestAccessToken(accessTokenRequest).ConfigureAwait(false);
-                      
+
             if (string.IsNullOrEmpty(exaltPath))
             {
                 throw new ExaltPathNotFoundException();

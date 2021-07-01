@@ -16,7 +16,7 @@ namespace ExaltAccountManager.Core.Util
             using HttpClient client = new();
             var content = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>("clientToken", accessTokenRequest.DeviceToken!), // the actual device token doesn't really matter, "0" could be used here or any value literally
+                    new KeyValuePair<string, string>("clientToken", accessTokenRequest.DeviceToken!), // the actual device token doesn't really matter, "0" could be used here or any value literally, it is possible but very rare to get a "token for a different machine error" though.
                     new KeyValuePair<string, string>("guid", accessTokenRequest.Guid!),
                     new KeyValuePair<string, string>("password", accessTokenRequest.Password!)
                 };

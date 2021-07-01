@@ -28,6 +28,7 @@ namespace ExaltAccountManager.UI
         private void BtnSaveSettings_Click(object sender, RoutedEventArgs e)
         {
             _userSettings.ExaltPath = txtExaltPath.Text;
+            _userSettings.DeviceToken = txtDeviceToken.Password;
             _settingsManager.SaveSettings(_userSettings);
             MessageBox.Show("Settings saved");
         }
@@ -70,6 +71,7 @@ namespace ExaltAccountManager.UI
         private void Apply(UserSettings userSettings)
         {
             txtExaltPath.Text = userSettings?.ExaltPath ?? "";
+            txtDeviceToken.Password = userSettings?.DeviceToken ?? "";
             lbAccountList.ItemsSource = userSettings.Accounts;
             lbAccountList.Items.Refresh();
         }
@@ -83,7 +85,7 @@ namespace ExaltAccountManager.UI
             }
             Account account = lbAccountList.SelectedItem as Account;
 
-            Helper.LaunchExaltClient(_userSettings.ExaltPath, Helper.Base64Decode(account.Base64EMail), Helper.Base64Decode(account.Base64Password));
+            Helper.LaunchExaltClient(_userSettings.ExaltPath, Helper.Base64Decode(account.Base64EMail), Helper.Base64Decode(account.Base64Password), _userSettings.DeviceToken);
         }
 
         private void BtnSelectLast_Click(object sender, RoutedEventArgs e)

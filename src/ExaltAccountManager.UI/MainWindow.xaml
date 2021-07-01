@@ -83,6 +83,10 @@
                     <Grid Margin="30" Background="White" Height="264" VerticalAlignment="Bottom">
                         <TextBlock Height="23" HorizontalAlignment="Left" Margin="35,50,0,0" Name="textBlockExaltPath" Text="Exalt Path" VerticalAlignment="Top" Width="110" />
                         <TextBox IsReadOnly="true" PreviewMouseDown="TxtExaltPath_PreviewMouseDown" Height="23" HorizontalAlignment="Left" Margin="35,78,0,0" Name="txtExaltPath" VerticalAlignment="Top" Width="400" />
+
+                        <TextBlock HorizontalAlignment="Left" Margin="35,116,0,0" Text="Device Token" TextWrapping="Wrap" VerticalAlignment="Top"/>
+                        <PasswordBox Name="txtDeviceToken" Height="23" HorizontalAlignment="Left" Margin="35,148,0,0" VerticalAlignment="Top" Width="400" />
+                        
                         <Button Content="Save Settings"  HorizontalAlignment="Left" Margin="183,204,0,0" Height="23" Name="btnSaveSettings" Click="BtnSaveSettings_Click"/>
                     </Grid>
                 </Grid>
