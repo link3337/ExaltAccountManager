@@ -17,5 +17,14 @@ You can request a new feature by submitting an issue to the GitHub Repository. I
 
 Before you submit an issue, please search the issue tracker, maybe an issue for your problem already exists and the discussion might inform you of workarounds readily available.
 
+## Bypassing "token for different machine" error
+It's very rare to get this kind of error and it's still unknown why that happens, but there is a workaround implemented that will bypass this problem. 
+Instead of using the generated device token from your computer, you can set the device/clientToken manually in the settings tab (3rd tab) within the application.
+You want to set the clientToken that gets sent when you would open the game normally via the official launcher.
+
+You will have to use [Fiddler](https://www.telerik.com/fiddler) to do this. You want to look for the POST request that gets sent to https://www.realmofthemadgod.com/account/verify. Check the body and look for "clientToken" copy and paste that into the textbox and save the settings.
+If you can't see the request you might have to change fiddler settings to capture and decrypt HTTPS traffic. 
+Fiddler -> Options -> HTTPS Tab -> Make sure that Decrypt HTTPS traffic is selected. 
+
 ## Plans
 Once .NET MAUI is released this will probably see a redesign with some fancy UI.
