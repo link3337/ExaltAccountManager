@@ -26,7 +26,7 @@ You will have to use [Fiddler](https://www.telerik.com/fiddler) to do this. You 
 If you can't see the request you might have to change fiddler settings to capture and decrypt HTTPS traffic. 
 Fiddler -> Options -> HTTPS Tab -> Make sure that Decrypt HTTPS traffic is selected. 
 
-Alternatively you can use a [tool](https://github.com/MaikEight/EAM-GetClientHWID) that was made by MaikEight for this kind of purpose.
+Alternatively you can use a [tool](https://github.com/MaikEight/EAM-GetClientHWID) that was made by [MaikEight](https://github.com/MaikEight) for this kind of purpose.
 
 ## Plans
 Once .NET MAUI is released this will probably see a redesign with some fancy UI.
