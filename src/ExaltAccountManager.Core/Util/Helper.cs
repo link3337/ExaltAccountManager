@@ -1,9 +1,6 @@
 using ExaltAccountManager.Core.AccessToken;
 using ExaltAccountManager.Core.Exceptions;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Management;
 using System.Security.Cryptography;
 using System.Text;
@@ -64,8 +61,7 @@ namespace ExaltAccountManager.Core.Util
 
         private static string Hash(string input)
         {
-            using SHA1Managed sha1 = new();
-            var hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(input));
+            byte[] hash = SHA1.HashData(Encoding.UTF8.GetBytes(input));
             return string.Concat(hash.Select(b => b.ToString("x2")));
         }
     }

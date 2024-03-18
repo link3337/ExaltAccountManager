@@ -1,5 +1,3 @@
-using System;
-using System.IO;
 using System.Text.Json;
 
 namespace ExaltAccountManager.Core.Settings
@@ -8,10 +6,7 @@ namespace ExaltAccountManager.Core.Settings
     {
         private readonly string filePath;
 
-        public SettingsManager(string fileName)
-        {
-            filePath = GetLocalFilePath(fileName);
-        }
+        public SettingsManager(string fileName) => filePath = GetLocalFilePath(fileName);
 
         public T? LoadSettings() => File.Exists(filePath) ? JsonSerializer.Deserialize<T>(File.ReadAllText(filePath)) : null;
 

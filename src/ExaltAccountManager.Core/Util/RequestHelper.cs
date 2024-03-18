@@ -1,10 +1,5 @@
 using ExaltAccountManager.Core.AccessToken;
 using ExaltAccountManager.Core.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace ExaltAccountManager.Core.Util
@@ -13,13 +8,34 @@ namespace ExaltAccountManager.Core.Util
     {
         public async static Task<AccessTokenResponse> RequestAccessToken(AccessTokenRequest accessTokenRequest)
         {
+            bool isSteam = false;
+            string steamId = "";
+            // check if it is a steam account
+            if (accessTokenRequest.Guid!.Contains("steamworks:"))
+            {
+                isSteam = true;
+                steamId = accessTokenRequest.Guid.Split(":")[1];
+            }
+
             using HttpClient client = new();
             var content = new List<KeyValuePair<string, string>>
                 {
-                    new KeyValuePair<string, string>("clientToken", accessTokenRequest.DeviceToken!), // the actual device token doesn't really matter, "0" could be used here or any value literally, it is possible but very rare to get a "token for a different machine error" though.
-                    new KeyValuePair<string, string>("guid", accessTokenRequest.Guid!),
-                    new KeyValuePair<string, string>("password", accessTokenRequest.Password!)
+                    new("clientToken", accessTokenRequest.DeviceToken!), // the actual device token doesn't really matter, "0" could be used here or any value literally, it is possible but very rare to get a "token for a different machine error" though.
+                    new("guid", accessTokenRequest.Guid),
+                    new("game_net", isSteam ? "Unity_steam" : "Unity"),
+                    new("play_platform", isSteam ? "Unity_steam" : "Unity"),
+                    new("game_net_user_id", steamId)
                 };
+
+            if (isSteam)
+            {
+                content.Add(new("steamid", steamId));
+                content.Add(new("secret", accessTokenRequest.Password!));
+            }
+            else
+            {
+                content.Add(new("password", accessTokenRequest.Password!));
+            }
 
             var requestMessage = new HttpRequestMessage
             {

@@ -63,8 +63,9 @@
                         </Grid.RowDefinitions>
                         <!--todo:proper layouting-->
                         <TextBlock Height="23" HorizontalAlignment="Left" Margin="20,53,0,0" Name="textBlockName" Text="Name" VerticalAlignment="Top" Width="150" />
-                        <TextBlock Height="23" HorizontalAlignment="Left" Margin="20,80,0,0" Name="textBlockEmail" Text="EMail" VerticalAlignment="Top" Width="150" />
+                        <TextBlock Height="23" HorizontalAlignment="Left" Margin="20,80,0,0" Name="textBlockEmail" Text="EMail/Steamworks" VerticalAlignment="Top" Width="159" />
                         <TextBlock Height="23" HorizontalAlignment="Left" Margin="20,107,0,0" Name="textBlockPassword" Text="Password" VerticalAlignment="Top" Width="150"  />
+
                         <TextBox Height="23" HorizontalAlignment="Left" Margin="224,53,0,0" Name="txtName" VerticalAlignment="Top" Width="150" />
                         <TextBox Height="23" HorizontalAlignment="Left" Margin="224,80,0,0" Name="txtEMail" VerticalAlignment="Top" Width="150" />
                         <PasswordBox Height="23" HorizontalAlignment="Left" Margin="224,107,0,0" Name="txtPassword" VerticalAlignment="Top" Width="150" />
