@@ -10,7 +10,10 @@ Exalt Account Manager is a simple program written in C# utilizing the Windows Pr
 Settings are saved at `%APPDATA%\ExaltAccountManager\settings.json`
 
 ## Limitations
-This doesn't work for steam accounts yet, also only works for Windows.
+Only works for Windows, but works for steam accounts now.
+
+## Steam Accounts
+Instead of entering the e-mail, `steamworks:<steamid>` and the password that you can get by using [Fiddler](https://www.telerik.com/fiddler) to look at the `https://www.realmofthemadgod.com/account/verify` HTTP request that is made via the Steam Launcher to get an access token. Look at the body and copy the password.
 
 ## Support and Contributions
 You can request a new feature by submitting an issue to the GitHub Repository. If you would like to implement a new feature, go ahead and fork the repository, create a new branch and then create a PR.

@@ -1,16 +1,9 @@
 namespace ExaltAccountManager.Core.AccessToken
 {
-    public class AccessTokenRequest
+    public class AccessTokenRequest(string guid, string password, string deviceToken)
     {
-        public AccessTokenRequest(string guid, string password, string deviceToken)
-        {
-            Guid = guid;
-            Password = password;
-            DeviceToken = deviceToken;
-        }
-
-        public string? DeviceToken { get; set; }
-        public string? Guid { get; set; }
-        public string? Password { get; set; }
+        public string? DeviceToken { get; set; } = deviceToken;
+        public string? Guid { get; set; } = guid;
+        public string? Password { get; set; } = password;
     }
 }

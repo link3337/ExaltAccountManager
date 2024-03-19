@@ -1,10 +1,6 @@
-using ExaltAccountManager.Core.Exceptions;
 using ExaltAccountManager.Core.Settings;
 using ExaltAccountManager.Core.Util;
 using Ookii.Dialogs.Wpf;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 
 namespace ExaltAccountManager.UI
@@ -20,7 +16,7 @@ namespace ExaltAccountManager.UI
             _settingsManager = new SettingsManager<UserSettings>("settings.json");
             _userSettings = _settingsManager.LoadSettings() ?? new UserSettings();
             // if account list null initialize empty list
-            _userSettings.Accounts ??= new List<Account>();
+            _userSettings.Accounts ??= [];
             // apply settings
             Apply(_userSettings);
         }
@@ -36,7 +32,7 @@ namespace ExaltAccountManager.UI
         private void BtnAddAccount_Click(object sender, RoutedEventArgs e)
         {
             string name = txtName.Text;
-            if (_userSettings.Accounts.Any(x => x.Name == name))
+            if (_userSettings.Accounts!.Any(x => x.Name == name))
             {
                 MessageBox.Show("An account with name already exists. Not saved.");
                 return;
@@ -51,7 +47,7 @@ namespace ExaltAccountManager.UI
             string base64EMail = Helper.Base64Encode(txtEMail.Text);
             string base64Password = Helper.Base64Encode(txtPassword.Password);
 
-            _userSettings.Accounts.Add(
+            _userSettings.Accounts!.Add(
                 new Account
                 {
                     Base64EMail = base64EMail,
@@ -65,6 +61,7 @@ namespace ExaltAccountManager.UI
             txtEMail.Text = "";
             txtName.Text = "";
             txtPassword.Password = "";
+
             Apply(_userSettings);
         }
 
@@ -72,7 +69,7 @@ namespace ExaltAccountManager.UI
         {
             txtExaltPath.Text = userSettings?.ExaltPath ?? "";
             txtDeviceToken.Password = userSettings?.DeviceToken ?? "";
-            lbAccountList.ItemsSource = userSettings.Accounts;
+            lbAccountList.ItemsSource = userSettings?.Accounts;
             lbAccountList.Items.Refresh();
         }
 
@@ -83,9 +80,19 @@ namespace ExaltAccountManager.UI
                 MessageBox.Show("Select an item.");
                 return;
             }
-            Account account = lbAccountList.SelectedItem as Account;
+            if (lbAccountList.SelectedItem is not Account account)
+            {
+                MessageBox.Show("Could not get selected item.");
+                return;
+            }
 
-            Helper.LaunchExaltClient(_userSettings.ExaltPath, Helper.Base64Decode(account.Base64EMail), Helper.Base64Decode(account.Base64Password), _userSettings.DeviceToken);
+            if (_userSettings.ExaltPath == null)
+            {
+                MessageBox.Show("Make sure exalt path is set");
+                return;
+            }
+
+            Helper.LaunchExaltClient(_userSettings.ExaltPath, Helper.Base64Decode(account.Base64EMail), Helper.Base64Decode(account.Base64Password), _userSettings.DeviceToken ?? "");
         }
 
         private void BtnSelectLast_Click(object sender, RoutedEventArgs e)
@@ -110,8 +117,12 @@ namespace ExaltAccountManager.UI
                 MessageBox.Show("Select an item.");
                 return;
             }
-            Account Account = lbAccountList.SelectedItem as Account;
-            _userSettings.Accounts.Remove(Account);
+            if (lbAccountList.SelectedItem is not Account account)
+            {
+                MessageBox.Show("Could not get selected item.");
+                return;
+            }
+            _userSettings.Accounts!.Remove(account);
             _settingsManager.SaveSettings(_userSettings);
             Apply(_userSettings);
         }
@@ -119,7 +130,7 @@ namespace ExaltAccountManager.UI
         private void TxtExaltPath_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             VistaFolderBrowserDialog dialog = new();
-            if (dialog.ShowDialog().Value)
+            if (dialog.ShowDialog()!.Value)
             {
                 txtExaltPath.Text = dialog.SelectedPath;
             }

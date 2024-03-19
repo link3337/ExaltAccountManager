@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace ExaltAccountManager.Core.Settings
 {
     public class UserSettings

@@ -1,19 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows</TargetFramework>
-    <UseWPF>true</UseWPF>
-    <AssemblyName>ExaltAccountManager.UI</AssemblyName>
-    <RootNamespace>ExaltAccountManager.UI</RootNamespace>
-    <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Ookii.Dialogs.Wpf" Version="3.1.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ExaltAccountManager.Core\ExaltAccountManager.Core.csproj" />
-  </ItemGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseWPF>true</UseWPF>
+		<AssemblyName>ExaltAccountManager.UI</AssemblyName>
+		<RootNamespace>ExaltAccountManager.UI</RootNamespace>
+		<ApplicationIcon>Resources\icon.ico</ApplicationIcon>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Ookii.Dialogs.Wpf" Version="3.1.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\ExaltAccountManager.Core\ExaltAccountManager.Core.csproj" />
+	</ItemGroup>
 </Project>
