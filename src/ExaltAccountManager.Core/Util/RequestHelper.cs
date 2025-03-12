@@ -1,12 +1,22 @@
+using System.Xml.Linq;
 using ExaltAccountManager.Core.AccessToken;
 using ExaltAccountManager.Core.Exceptions;
-using System.Xml.Linq;
 
 namespace ExaltAccountManager.Core.Util
 {
-    public static class RequestHelper
+    /// <summary>
+    /// Helper class for making requests to the Realm of the Mad God API.
+    /// </summary>
+    public class RequestHelper
     {
-        public async static Task<AccessTokenResponse> RequestAccessToken(AccessTokenRequest accessTokenRequest)
+        /// <summary>
+        /// Requests an access token from the Realm of the Mad God API.
+        /// </summary>
+        /// <param name="accessTokenRequest">The request object containing the necessary parameters for the access token request.</param>
+        /// <returns>The access token response.</returns>
+        /// <exception cref="AccessTokenParseFailedException">Thrown when the response content cannot be parsed.</exception>
+        /// <exception cref="AccessTokenRetrievalFailedException">Thrown when the access token retrieval fails.</exception>
+        public static async Task<AccessTokenResponse> RequestAccessToken(AccessTokenRequest accessTokenRequest)
         {
             bool isSteam = false;
             string steamId = "";
@@ -18,14 +28,14 @@ namespace ExaltAccountManager.Core.Util
             }
 
             using HttpClient client = new();
-            var content = new List<KeyValuePair<string, string>>
-                {
-                    new("clientToken", accessTokenRequest.DeviceToken!), // the actual device token doesn't really matter, "0" could be used here or any value literally, it is possible but very rare to get a "token for a different machine error" though.
-                    new("guid", accessTokenRequest.Guid),
-                    new("game_net", isSteam ? "Unity_steam" : "Unity"),
-                    new("play_platform", isSteam ? "Unity_steam" : "Unity"),
-                    new("game_net_user_id", steamId)
-                };
+            List<KeyValuePair<string, string>> content =
+            [
+                new("clientToken", accessTokenRequest.DeviceToken!), // the actual device token doesn't really matter, "0" could be used here or any value literally, it is possible but very rare to get a "token for a different machine error" though.
+                new("guid", accessTokenRequest.Guid),
+                new("game_net", isSteam ? "Unity_steam" : "Unity"),
+                new("play_platform", isSteam ? "Unity_steam" : "Unity"),
+                new("game_net_user_id", steamId),
+            ];
 
             if (isSteam)
             {
@@ -37,28 +47,38 @@ namespace ExaltAccountManager.Core.Util
                 content.Add(new("password", accessTokenRequest.Password!));
             }
 
-            var requestMessage = new HttpRequestMessage
+            HttpRequestMessage requestMessage = new()
             {
                 RequestUri = new Uri("https://www.realmofthemadgod.com/account/verify"),
                 Method = HttpMethod.Post,
-                Content = new FormUrlEncodedContent(content!)
+                Content = new FormUrlEncodedContent(content!),
             };
 
-            var response = await client.SendAsync(requestMessage).ConfigureAwait(false);
+            HttpResponseMessage response = await client
+                .SendAsync(requestMessage)
+                .ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
                 try
                 {
                     // read result
-                    var c = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    string c = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-                    var xml = XElement.Parse(c);
+                    XElement xml = XElement.Parse(c);
 
                     return new AccessTokenResponse
                     {
-                        AccessToken = xml.Descendants().First(node => node.Name == "AccessToken").Value,
-                        AccessTokenExpiration = Convert.ToInt32(xml.Descendants().First(node => node.Name == "AccessTokenExpiration").Value),
-                        AccessTokenTimestamp = xml.Descendants().First(node => node.Name == "AccessTokenTimestamp").Value
+                        AccessToken = xml.Descendants()
+                            .First(node => node.Name == "AccessToken")
+                            .Value,
+                        AccessTokenExpiration = Convert.ToInt32(
+                            xml.Descendants()
+                                .First(node => node.Name == "AccessTokenExpiration")
+                                .Value
+                        ),
+                        AccessTokenTimestamp = xml.Descendants()
+                            .First(node => node.Name == "AccessTokenTimestamp")
+                            .Value,
                     };
                 }
                 catch (Exception)

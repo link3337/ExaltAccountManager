@@ -1,5 +1,3 @@
-using System.Runtime.Serialization;
-
 namespace ExaltAccountManager.Core.Exceptions
 {
     public class AccessTokenRetrievalFailedException : Exception
