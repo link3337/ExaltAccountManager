@@ -43,19 +43,12 @@ namespace ExaltAccountManager.Core.Util
         /// <param name="manualDeviceToken">The manual device token, if any.</param>
         /// <exception cref="ExaltPathNotFoundException">Thrown when the Exalt path is not found.</exception>
         /// <exception cref="ExaltExeNotFoundException">Thrown when the Exalt executable is not found.</exception>
-        public static async void LaunchExaltClient(
-            string exaltPath,
-            string email,
-            string password,
-            string manualDeviceToken
-        )
+        public static async void LaunchExaltClient(string exaltPath, string email, string password, string manualDeviceToken)
         {
             string deviceToken = string.IsNullOrEmpty(manualDeviceToken) ? GetDeviceToken() : manualDeviceToken;
             // get access token
             AccessTokenRequest accessTokenRequest = new(email, password, deviceToken);
-            AccessTokenResponse accessTokenResponse = await RequestHelper
-                .RequestAccessToken(accessTokenRequest)
-                .ConfigureAwait(false);
+            AccessTokenResponse accessTokenResponse = await RequestHelper.RequestAccessToken(accessTokenRequest).ConfigureAwait(false);
 
             if (string.IsNullOrEmpty(exaltPath))
             {

@@ -20,6 +20,7 @@ namespace ExaltAccountManager.Core.Util
         {
             bool isSteam = false;
             string steamId = "";
+            
             // check if it is a steam account
             if (accessTokenRequest.Guid!.Contains("steamworks:"))
             {
@@ -49,14 +50,13 @@ namespace ExaltAccountManager.Core.Util
 
             HttpRequestMessage requestMessage = new()
             {
-                RequestUri = new Uri("https://www.realmofthemadgod.com/account/verify"),
+                RequestUri = new Uri(Constants.RealmApiVerifyEndpoint),
                 Method = HttpMethod.Post,
                 Content = new FormUrlEncodedContent(content!),
             };
 
-            HttpResponseMessage response = await client
-                .SendAsync(requestMessage)
-                .ConfigureAwait(false);
+            HttpResponseMessage response = await client.SendAsync(requestMessage).ConfigureAwait(false);
+
             if (response.IsSuccessStatusCode)
             {
                 try
@@ -68,17 +68,9 @@ namespace ExaltAccountManager.Core.Util
 
                     return new AccessTokenResponse
                     {
-                        AccessToken = xml.Descendants()
-                            .First(node => node.Name == "AccessToken")
-                            .Value,
-                        AccessTokenExpiration = Convert.ToInt32(
-                            xml.Descendants()
-                                .First(node => node.Name == "AccessTokenExpiration")
-                                .Value
-                        ),
-                        AccessTokenTimestamp = xml.Descendants()
-                            .First(node => node.Name == "AccessTokenTimestamp")
-                            .Value,
+                        AccessToken = xml.Descendants().First(node => node.Name == "AccessToken").Value,
+                        AccessTokenExpiration = Convert.ToInt32(xml.Descendants().First(node => node.Name == "AccessTokenExpiration").Value),
+                        AccessTokenTimestamp = xml.Descendants().First(node => node.Name == "AccessTokenTimestamp").Value,
                     };
                 }
                 catch (Exception)
