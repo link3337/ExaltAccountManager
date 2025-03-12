@@ -20,7 +20,7 @@ namespace ExaltAccountManager.Core.Util
         {
             bool isSteam = false;
             string steamId = "";
-            
+
             // check if it is a steam account
             if (accessTokenRequest.Guid!.Contains("steamworks:"))
             {
