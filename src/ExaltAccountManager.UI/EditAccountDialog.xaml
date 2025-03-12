@@ -6,6 +6,15 @@
         Width="400"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Styles/ButtonStyles.xaml"/>
+                <ResourceDictionary Source="/Styles/TextStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -19,25 +28,41 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <TextBlock Text="Name:" Margin="5"/>
-        <TextBox x:Name="txtName" Grid.Column="1" Margin="5"/>
+        <TextBlock Text="Name:"
+                Margin="5"/>
+        <TextBox x:Name="txtName"
+                Grid.Column="1"
+                Margin="5"/>
 
-        <TextBlock Text="Email:" Grid.Row="1" Margin="5"/>
-        <TextBox x:Name="txtEmail" Grid.Row="1" Grid.Column="1" Margin="5"/>
+        <TextBlock Text="Email:"
+                Grid.Row="1"
+                Margin="5"/>
+        <TextBox x:Name="txtEmail"
+                Grid.Row="1"
+                Grid.Column="1"
+                Margin="5"/>
 
-        <TextBlock Text="Password:" Grid.Row="2" Margin="5"/>
-        <PasswordBox x:Name="txtPassword" Grid.Row="2" Grid.Column="1" Margin="5"/>
+        <TextBlock Text="Password:"
+                Grid.Row="2"
+                Margin="5"/>
+        <PasswordBox x:Name="txtPassword"
+                Grid.Row="2"
+                Grid.Column="1"
+                Margin="5"/>
 
-        <StackPanel Grid.Row="4" Grid.ColumnSpan="2" 
-                    Orientation="Horizontal" 
+        <StackPanel Grid.Row="4"
+                Grid.ColumnSpan="2"
+                    Orientation="Horizontal"
                     HorizontalAlignment="Right">
-            <Button Content="Save" 
-                    Click="BtnSave_Click" 
-                    Width="80" 
+            <Button Content="Save"
+                    Click="BtnSave_Click"
+                    Style="{StaticResource ActionButton}"
+                    Width="80"
                     Margin="5"/>
-            <Button Content="Cancel" 
-                    Click="BtnCancel_Click" 
-                    Width="80" 
+            <Button Content="Cancel"
+                    Click="BtnCancel_Click"
+                    Style="{StaticResource DangerButton}"
+                    Width="80"
                     Margin="5"/>
         </StackPanel>
     </Grid>

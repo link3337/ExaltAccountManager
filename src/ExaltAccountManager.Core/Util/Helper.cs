@@ -60,8 +60,7 @@ namespace ExaltAccountManager.Core.Util
                 ProcessStartInfo processStartInfo = new()
                 {
                     FileName = exaltPath,
-                    Arguments =
-                        $"data:{{platform:Deca,guid:{Helper.Base64Encode(email)},token:{Helper.Base64Encode(accessTokenResponse.AccessToken)},tokenTimestamp:{Helper.Base64Encode(accessTokenResponse.AccessTokenTimestamp)},tokenExpiration:{Helper.Base64Encode(accessTokenResponse.AccessTokenExpiration.ToString())},env:4}}",
+                    Arguments = $"data:{{platform:Deca,guid:{Helper.Base64Encode(email)},token:{Helper.Base64Encode(accessTokenResponse.AccessToken)},tokenTimestamp:{Helper.Base64Encode(accessTokenResponse.AccessTokenTimestamp)},tokenExpiration:{Helper.Base64Encode(accessTokenResponse.AccessTokenExpiration.ToString())},env:4}}",
                 };
                 Process.Start(processStartInfo);
             }
