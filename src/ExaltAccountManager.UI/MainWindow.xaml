@@ -34,7 +34,7 @@
                     Value="0,0,0,5"/>
         </Style>
         <Style TargetType="TextBlock"
-                x:Key="AboutTextStyle">
+               x:Key="AboutTextStyle">
             <Setter Property="Margin"
                     Value="5"/>
             <Setter Property="HorizontalAlignment"
@@ -49,89 +49,78 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Accounts List -->
         <GroupBox Header="Accounts"
                   Grid.Row="0">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <ListBox ItemsSource="{Binding Accounts}"
-                         SelectedItem="{Binding SelectedAccount}"
-                         Margin="5">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name}"/>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
 
-                <StackPanel Grid.Column="1"
+                <Button Content="Add Account"
+                        Grid.Row="0"
+                        Click="BtnAddAccount_Click"
+                        HorizontalAlignment="Right"
+                        Margin="5"/>
+
+                <DataGrid  Name="AccountsGrid"
+                           Grid.Row="1"
+                           ItemsSource="{Binding Accounts}"
+                           SelectedItem="{Binding SelectedAccount}"
+                           AutoGenerateColumns="False"
+                           CanUserAddRows="False"
+                           CanUserDeleteRows="False"
+                           IsReadOnly="True"
+                           SelectionMode="Single"
+                           SelectionUnit="FullRow"
+                           GridLinesVisibility="All"
+                           BorderThickness="1"
+                           Margin="5">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Name"
+                                            Binding="{Binding Name}"
+                                            Width="*"/>
+                        <DataGridTemplateColumn Header="Actions"
+                                                Width="Auto">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="Launch"
+                                                Click="BtnOpenSelectedItem_Click"
+                                                Margin="2"/>
+                                        <Button Content="Edit"
+                                                Click="BtnEditAccount_Click"
+                                                Margin="2"/>
+                                        <Button Content="Delete"
+                                                Click="BtnDelete_Click"
+                                                Margin="2"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <StackPanel Grid.Row="2"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right"
                             Margin="5">
-                    <Button Content="Launch Selected"
-                            Click="BtnOpenSelectedItem_Click"/>
                     <Button Content="Select Next"
                             Click="BtnSelectNext_Click"/>
                     <Button Content="Select Last"
                             Click="BtnSelectLast_Click"/>
-                    <Button Content="Delete"
-                            Click="BtnDelete_Click"/>
                 </StackPanel>
             </Grid>
         </GroupBox>
 
-        <!-- Add Account Section -->
-        <Expander Header="Add Account"
-                  Grid.Row="1"
-                  IsExpanded="False">
-            <Grid Margin="5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <TextBlock Text="Name:"
-                           VerticalAlignment="Center"/>
-                <TextBox x:Name="txtName"
-                         Grid.Column="1"/>
-
-                <TextBlock Text="Email:"
-                           Grid.Row="1"
-                           VerticalAlignment="Center"/>
-                <TextBox x:Name="txtEMail"
-                         Grid.Row="1"
-                         Grid.Column="1"/>
-
-                <TextBlock Text="Password:"
-                           Grid.Row="2"
-                           VerticalAlignment="Center"/>
-                <PasswordBox x:Name="txtPassword"
-                             Grid.Row="2"
-                             Grid.Column="1"/>
-
-                <Button Grid.Row="3"
-                        Grid.Column="1"
-                        Content="Add Account"
-                        HorizontalAlignment="Right"
-                        Click="BtnAddAccount_Click"/>
-            </Grid>
-        </Expander>
-
         <!-- Settings Section -->
         <Expander Header="Settings"
-                  Grid.Row="2"
+                  Grid.Row="1"
                   IsExpanded="False">
             <Grid Margin="5">
                 <Grid.ColumnDefinitions>
@@ -169,13 +158,13 @@
         </Expander>
 
         <!-- About Section -->
-        <StackPanel Grid.Row="3" 
-                    Margin="0,10,0,0" 
-                    Orientation="Horizontal" 
+        <StackPanel Grid.Row="3"
+                    Margin="0,10,0,0"
+                    Orientation="Horizontal"
                     HorizontalAlignment="Center">
             <TextBlock Text="Made by Lingo with ❤️"
                        Style="{StaticResource AboutTextStyle}"/>
-            <TextBlock Text="|" 
+            <TextBlock Text="|"
                        Style="{StaticResource AboutTextStyle}"/>
             <TextBlock Style="{StaticResource AboutTextStyle}">
                 <Hyperlink NavigateUri="https://github.com/link3337/ExaltAccountManager"
