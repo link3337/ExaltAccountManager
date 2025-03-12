@@ -4,16 +4,16 @@ namespace ExaltAccountManager.Core.Settings
 {
     public class SettingsManager<T> where T : class
     {
-        private readonly string filePath;
+        private readonly string _filePath;
 
-        public SettingsManager(string fileName) => filePath = GetLocalFilePath(fileName);
+        public SettingsManager(string fileName) => _filePath = GetLocalFilePath(fileName);
 
-        public T? LoadSettings() => File.Exists(filePath) ? JsonSerializer.Deserialize<T>(File.ReadAllText(filePath)) : null;
+        public T? LoadSettings() => File.Exists(_filePath) ? JsonSerializer.Deserialize<T>(File.ReadAllText(_filePath)) : null;
 
         public void SaveSettings(T settings)
         {
             string json = JsonSerializer.Serialize(settings);
-            File.WriteAllText(filePath, json);
+            File.WriteAllText(_filePath, json);
         }
 
         private static string GetLocalFilePath(string fileName)

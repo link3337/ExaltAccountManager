@@ -1,6 +1,6 @@
-using ExaltAccountManager.Core.Exceptions;
 using System.Windows;
 using System.Windows.Threading;
+using ExaltAccountManager.Core.Exceptions;
 
 namespace ExaltAccountManager.UI
 {
