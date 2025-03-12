@@ -1,139 +1,295 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Windows;
+using System.Windows.Input;
 using ExaltAccountManager.Core.Settings;
 using ExaltAccountManager.Core.Util;
 using Ookii.Dialogs.Wpf;
-using System.Windows;
 
 namespace ExaltAccountManager.UI
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private readonly SettingsManager<UserSettings> _settingsManager;
-        private readonly UserSettings _userSettings;
+        private UserSettings? _settings;
+        private ObservableCollection<Account> _accounts;
+        private Account? _selectedAccount;
+        private string _exaltPath = string.Empty;
+        private string _deviceToken = string.Empty;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public ObservableCollection<Account> Accounts
+        {
+            get => _accounts;
+            set
+            {
+                _accounts = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public Account? SelectedAccount
+        {
+            get => _selectedAccount;
+            set
+            {
+                _selectedAccount = value;
+                OnPropertyChanged();
+            }
+        }
+        public UserSettings Settings
+        {
+            get => _settings ?? throw new InvalidOperationException("Settings not initialized");
+            private set
+            {
+                _settings = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string ExaltPath
+        {
+            get => _exaltPath;
+            set
+            {
+                _exaltPath = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string DeviceToken
+        {
+            get => _deviceToken;
+            set
+            {
+                _deviceToken = value;
+                OnPropertyChanged();
+            }
+        }
 
         public MainWindow()
         {
             InitializeComponent();
             _settingsManager = new SettingsManager<UserSettings>("settings.json");
-            _userSettings = _settingsManager.LoadSettings() ?? new UserSettings();
-            // if account list null initialize empty list
-            _userSettings.Accounts ??= [];
-            // apply settings
-            Apply(_userSettings);
+            _accounts = [];
+            DataContext = this;
+
+            LoadSettings();
+        }
+
+        private void LoadSettings()
+        {
+            try
+            {
+                Settings = _settingsManager.LoadSettings() ?? new UserSettings();
+                Settings.Accounts ??= [];
+                ApplySettings(Settings);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to load settings: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void BtnSaveSettings_Click(object sender, RoutedEventArgs e)
         {
-            _userSettings.ExaltPath = txtExaltPath.Text;
-            _userSettings.DeviceToken = txtDeviceToken.Password;
-            _settingsManager.SaveSettings(_userSettings);
-            MessageBox.Show("Settings saved");
+            try
+            {
+                if (!ValidateSettings())
+                {
+                    return;
+                }
+
+                Settings.ExaltPath = ExaltPath;
+                Settings.DeviceToken = DeviceToken;
+                _settingsManager.SaveSettings(Settings);
+                MessageBox.Show("Settings saved successfully", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to save settings: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error
+                );
+            }
         }
 
         private void BtnAddAccount_Click(object sender, RoutedEventArgs e)
         {
-            string name = txtName.Text;
-            if (_userSettings.Accounts!.Any(x => x.Name == name))
+            try
             {
-                MessageBox.Show("An account with name already exists. Not saved.");
-                return;
-            }
-            if (string.IsNullOrEmpty(txtEMail.Text) || string.IsNullOrEmpty(txtPassword.Password))
-
-            {
-                MessageBox.Show("E-Mail / Password cannot be empty.");
-                return;
-            }
-
-            string base64EMail = Helper.Base64Encode(txtEMail.Text);
-            string base64Password = Helper.Base64Encode(txtPassword.Password);
-
-            _userSettings.Accounts!.Add(
-                new Account
+                if (!ValidateAccountInput())
                 {
-                    Base64EMail = base64EMail,
-                    Base64Password = base64Password,
-                    Name = name
-                });
+                    return;
+                }
 
-            _settingsManager.SaveSettings(_userSettings);
+                Account account = new()
+                {
+                    Base64EMail = Helper.Base64Encode(txtEMail.Text),
+                    Base64Password = Helper.Base64Encode(txtPassword.Password),
+                    Name = txtName.Text,
+                };
 
-            MessageBox.Show("Added account.");
-            txtEMail.Text = "";
-            txtName.Text = "";
-            txtPassword.Password = "";
+                Settings.Accounts!.Add(account);
+                _settingsManager.SaveSettings(Settings);
 
-            Apply(_userSettings);
+                ClearAccountInputs();
+                ApplySettings(Settings);
+
+                MessageBox.Show("Account added successfully", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to add account: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void Apply(UserSettings userSettings)
+        private void ApplySettings(UserSettings userSettings)
         {
-            txtExaltPath.Text = userSettings?.ExaltPath ?? "";
-            txtDeviceToken.Password = userSettings?.DeviceToken ?? "";
-            lbAccountList.ItemsSource = userSettings?.Accounts;
-            lbAccountList.Items.Refresh();
+            ExaltPath = userSettings?.ExaltPath ?? "";
+            DeviceToken = userSettings?.DeviceToken ?? "";
+            Accounts = [.. userSettings?.Accounts ?? []];
         }
 
-        private void BtnOpenSelectedItem_Click(object sender, RoutedEventArgs e)
+        private async void BtnOpenSelectedItem_Click(object sender, RoutedEventArgs e)
         {
-            if (lbAccountList.SelectedItem is null)
+            if (!ValidateExaltLaunch())
             {
-                MessageBox.Show("Select an item.");
-                return;
-            }
-            if (lbAccountList.SelectedItem is not Account account)
-            {
-                MessageBox.Show("Could not get selected item.");
                 return;
             }
 
-            if (_userSettings.ExaltPath == null)
-            {
-                MessageBox.Show("Make sure exalt path is set");
-                return;
-            }
-
-            Helper.LaunchExaltClient(_userSettings.ExaltPath, Helper.Base64Decode(account.Base64EMail), Helper.Base64Decode(account.Base64Password), _userSettings.DeviceToken ?? "");
+            await Helper.LaunchExaltClient(Settings.ExaltPath!, Helper.Base64Decode(SelectedAccount!.Base64EMail), Helper.Base64Decode(SelectedAccount.Base64Password), Settings.DeviceToken ?? "");
         }
 
         private void BtnSelectLast_Click(object sender, RoutedEventArgs e)
         {
-            lbAccountList.SelectedIndex = lbAccountList.Items.Count - 1;
+            if (Accounts.Count > 0)
+            {
+                SelectedAccount = Accounts[^1];
+            }
         }
 
         private void BtnSelectNext_Click(object sender, RoutedEventArgs e)
         {
-            int nextIndex = 0;
-            if ((lbAccountList.SelectedIndex >= 0) && (lbAccountList.SelectedIndex < (lbAccountList.Items.Count - 1)))
+            if (Accounts.Count == 0)
             {
-                nextIndex = lbAccountList.SelectedIndex + 1;
+                return;
             }
-            lbAccountList.SelectedIndex = nextIndex;
+
+            int currentIndex = Accounts.IndexOf(SelectedAccount ?? Accounts[^1]);
+            SelectedAccount = Accounts[(currentIndex + 1) % Accounts.Count];
         }
 
         private void BtnDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (lbAccountList.SelectedItem is null)
+            try
             {
-                MessageBox.Show("Select an item.");
-                return;
+                if (SelectedAccount is null)
+                {
+                    MessageBox.Show("Please select an account to delete", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                MessageBoxResult result = MessageBox.Show($"Are you sure you want to delete account '{SelectedAccount.Name}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question
+                );
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    Settings.Accounts!.Remove(SelectedAccount);
+                    _settingsManager.SaveSettings(Settings);
+                    ApplySettings(Settings);
+                }
             }
-            if (lbAccountList.SelectedItem is not Account account)
+            catch (Exception ex)
             {
-                MessageBox.Show("Could not get selected item.");
-                return;
+                MessageBox.Show("Failed to delete account: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            _userSettings.Accounts!.Remove(account);
-            _settingsManager.SaveSettings(_userSettings);
-            Apply(_userSettings);
         }
 
-        private void TxtExaltPath_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void TxtExaltPath_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             VistaFolderBrowserDialog dialog = new();
             if (dialog.ShowDialog()!.Value)
             {
-                txtExaltPath.Text = dialog.SelectedPath;
+                ExaltPath = dialog.SelectedPath;
             }
+        }
+
+        private bool ValidateSettings()
+        {
+            if (string.IsNullOrEmpty(ExaltPath))
+            {
+                MessageBox.Show("Exalt path cannot be empty", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            if (!Directory.Exists(ExaltPath))
+            {
+                MessageBox.Show("Selected Exalt path does not exist", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool ValidateAccountInput()
+        {
+            if (string.IsNullOrEmpty(txtName.Text))
+            {
+                MessageBox.Show("Account name cannot be empty", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            if (Settings.Accounts!.Any(x => x.Name == txtName.Text))
+            {
+                MessageBox.Show("An account with this name already exists", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(txtEMail.Text) || string.IsNullOrEmpty(txtPassword.Password))
+            {
+                MessageBox.Show("Email and password cannot be empty", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool ValidateExaltLaunch()
+        {
+            if (SelectedAccount is null)
+            {
+                MessageBox.Show("Please select an account", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(Settings.ExaltPath))
+            {
+                MessageBox.Show("Please set the Exalt path in settings", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            return true;
+        }
+
+        private void ClearAccountInputs()
+        {
+            txtEMail.Text = string.Empty;
+            txtName.Text = string.Empty;
+            txtPassword.Password = string.Empty;
+        }
+
+        private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+            e.Handled = true;
+        }
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
