@@ -15,9 +15,5 @@ namespace ExaltAccountManager.Core.Exceptions
         public AccessTokenRetrievalFailedException(string? message, Exception? innerException) : base(message, innerException)
         {
         }
-
-        protected AccessTokenRetrievalFailedException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
     }
 }
