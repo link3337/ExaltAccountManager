@@ -4,9 +4,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using ExaltAccountManager.Core.Settings;
 using ExaltAccountManager.Core.Util;
+using ExaltAccountManager.UI.Controls;
 using Ookii.Dialogs.Wpf;
 
 namespace ExaltAccountManager.UI
@@ -19,8 +22,11 @@ namespace ExaltAccountManager.UI
         private Account? _selectedAccount;
         private string _exaltPath = string.Empty;
         private string _deviceToken = string.Empty;
+        private Point _dragStartPoint;
 
         public event PropertyChangedEventHandler? PropertyChanged;
+
+        public Snackbar Snackbar => SnackbarElement;
 
         public ObservableCollection<Account> Accounts
         {
@@ -91,7 +97,7 @@ namespace ExaltAccountManager.UI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to load settings: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Snackbar.Show($"Failed to load settings: {ex.Message}");
             }
         }
 
@@ -107,11 +113,12 @@ namespace ExaltAccountManager.UI
                 Settings.ExaltPath = ExaltPath;
                 Settings.DeviceToken = DeviceToken;
                 _settingsManager.SaveSettings(Settings);
-                MessageBox.Show("Settings saved successfully", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                Snackbar.Show("Settings saved successfully");
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to save settings: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Snackbar.Show($"Failed to save settings: {ex.Message}");
             }
         }
 
@@ -125,7 +132,7 @@ namespace ExaltAccountManager.UI
                 {
                     if (Settings.Accounts!.Any(x => x.Name == dialog.AccountName))
                     {
-                        MessageBox.Show("An account with this name already exists", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        Snackbar.Show("An account with this name already exists");
                         return;
                     }
 
@@ -140,12 +147,12 @@ namespace ExaltAccountManager.UI
                     _settingsManager.SaveSettings(Settings);
                     ApplySettings(Settings);
 
-                    MessageBox.Show("Account added successfully", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Snackbar.Show("Account added successfully");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to add account: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Snackbar.Show($"Failed to add account: {ex.Message}");
             }
         }
 
@@ -170,11 +177,13 @@ namespace ExaltAccountManager.UI
                     // Save changes
                     _settingsManager.SaveSettings(Settings);
                     ApplySettings(Settings);
+
+                    Snackbar.Show("Account edited successfully");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to edit account: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Snackbar.Show($"Failed to edit account: {ex.Message}");
             }
         }
 
@@ -184,23 +193,22 @@ namespace ExaltAccountManager.UI
             {
                 if (SelectedAccount is null)
                 {
-                    MessageBox.Show("Please select an account to delete", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    Snackbar.Show("Please select an account to delete");
                     return;
                 }
 
-                MessageBoxResult result = MessageBox.Show($"Are you sure you want to delete account '{SelectedAccount.Name}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question
-                );
-
-                if (result == MessageBoxResult.Yes)
+                if (MessageBox.Show($"Are you sure you want to delete account '{SelectedAccount.Name}'?",
+                    "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 {
                     Settings.Accounts!.Remove(SelectedAccount);
                     _settingsManager.SaveSettings(Settings);
                     ApplySettings(Settings);
+                    Snackbar.Show("Account deleted successfully");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to delete account: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Snackbar.Show($"Failed to delete account: {ex.Message}");
             }
         }
 
@@ -221,25 +229,6 @@ namespace ExaltAccountManager.UI
             await Helper.LaunchExaltClient(Settings.ExaltPath!, Helper.Base64Decode(SelectedAccount!.Base64EMail), Helper.Base64Decode(SelectedAccount.Base64Password), Settings.DeviceToken ?? "");
         }
 
-        private void BtnSelectLast_Click(object sender, RoutedEventArgs e)
-        {
-            if (Accounts.Count > 0)
-            {
-                SelectedAccount = Accounts[^1];
-            }
-        }
-
-        private void BtnSelectNext_Click(object sender, RoutedEventArgs e)
-        {
-            if (Accounts.Count == 0)
-            {
-                return;
-            }
-
-            int currentIndex = Accounts.IndexOf(SelectedAccount ?? Accounts[^1]);
-            SelectedAccount = Accounts[(currentIndex + 1) % Accounts.Count];
-        }
-
         private void TxtExaltPath_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             VistaFolderBrowserDialog dialog = new();
@@ -253,13 +242,13 @@ namespace ExaltAccountManager.UI
         {
             if (string.IsNullOrEmpty(ExaltPath))
             {
-                MessageBox.Show("Exalt path cannot be empty", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Snackbar.Show("Exalt path cannot be empty");
                 return false;
             }
 
             if (!Directory.Exists(ExaltPath))
             {
-                MessageBox.Show("Selected Exalt path does not exist", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Snackbar.Show("Selected Exalt path does not exist");
                 return false;
             }
 
@@ -270,13 +259,13 @@ namespace ExaltAccountManager.UI
         {
             if (SelectedAccount is null)
             {
-                MessageBox.Show("Please select an account", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Snackbar.Show("Please select an account");
                 return false;
             }
 
             if (string.IsNullOrEmpty(Settings.ExaltPath))
             {
-                MessageBox.Show("Please set the Exalt path in settings", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Snackbar.Show("Please set the Exalt path in settings");
                 return false;
             }
 
@@ -287,6 +276,89 @@ namespace ExaltAccountManager.UI
         {
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
             e.Handled = true;
+        }
+
+        private void AccountsGrid_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _dragStartPoint = e.GetPosition(null);
+        }
+
+        private void AccountsGrid_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton != MouseButtonState.Pressed)
+            {
+                return;
+            }
+
+            Vector diff = _dragStartPoint - e.GetPosition(null);
+            if (Math.Abs(diff.X) < SystemParameters.MinimumHorizontalDragDistance &&
+                Math.Abs(diff.Y) < SystemParameters.MinimumVerticalDragDistance)
+            {
+                return;
+            }
+
+            // Find the DataGridRow where dragging started.
+            DataGridRow? row = FindVisualParent<DataGridRow>((DependencyObject)e.OriginalSource);
+            if (row == null || row.Item is not Account draggedAccount)
+            {
+                return;
+            }
+
+            DataObject data = new("DraggedAccount", draggedAccount);
+            DragDrop.DoDragDrop(row, data, DragDropEffects.Move);
+        }
+
+        private void AccountsGrid_Drop(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent("DraggedAccount"))
+            {
+                return;
+            }
+
+            // Identify target row.
+            DataGridRow? targetRow = FindVisualParent<DataGridRow>((DependencyObject)e.OriginalSource);
+            if (targetRow == null || targetRow.Item is not Account targetAccount)
+            {
+                return;
+            }
+
+            // Get the dropped item.
+            if (e.Data.GetData("DraggedAccount") is not Account draggedAccount || draggedAccount == targetAccount)
+            {
+                return;
+            }
+
+            int indexDragged = Settings.Accounts!.IndexOf(draggedAccount);
+            int indexTarget = Settings.Accounts.IndexOf(targetAccount);
+
+            // Update order.
+            if (indexDragged < indexTarget)
+            {
+                Settings.Accounts.Insert(indexTarget + 1, draggedAccount);
+                Settings.Accounts.RemoveAt(indexDragged);
+            }
+            else
+            {
+                Settings.Accounts.Insert(indexTarget, draggedAccount);
+                Settings.Accounts.RemoveAt(indexDragged + 1);
+            }
+
+            _settingsManager.SaveSettings(Settings);
+            ApplySettings(Settings);
+            Snackbar.Show("Accounts reordered successfully");
+        }
+
+        private static T? FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            while (child != null)
+            {
+                if (child is T correctlyTyped)
+                {
+                    return correctlyTyped;
+                }
+                child = VisualTreeHelper.GetParent(child);
+            }
+            return null;
         }
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)

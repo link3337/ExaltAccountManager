@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Threading;
 using ExaltAccountManager.Core.Exceptions;
+using ExaltAccountManager.UI.Controls;
 
 namespace ExaltAccountManager.UI
 {
@@ -9,28 +10,36 @@ namespace ExaltAccountManager.UI
     /// </summary>
     public partial class App : Application
     {
+        private Snackbar? GetSnackbar()
+        {
+            if (MainWindow is MainWindow mainWindow)
+            {
+                return mainWindow.Snackbar;
+            }
+            return null;
+        }
+
         private void Application_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            if (e.Exception is ExaltPathNotFoundException)
+            string message = e.Exception switch
             {
-                MessageBox.Show("Make sure to enter exalt path in settings tab.");
-            }
-            else if (e.Exception is AccessTokenParseFailedException)
+                ExaltPathNotFoundException => "Make sure to enter exalt path in Settings",
+                AccessTokenParseFailedException => "Failed to parse access token, you might be rate limited, try later again",
+                AccessTokenRetrievalFailedException => "Failed to retrieve access token, try later again. Make sure credentials of the account are valid",
+                ExaltExeNotFoundException => "Couldn't start exalt. Make sure the path is correct and it contains the RotMG Exalt.exe file",
+                _ => $"Something went wrong: {e.Exception.Message}"
+            };
+
+            Snackbar? snackbar = GetSnackbar();
+            if (snackbar != null)
             {
-                MessageBox.Show("Failed to parse access token, try later again maybe.");
-            }
-            else if (e.Exception is AccessTokenRetrievalFailedException)
-            {
-                MessageBox.Show("Failed to retrieve access token, try later again maybe. Make sure the credentials of the account are valid.");
-            }
-            else if (e.Exception is ExaltExeNotFoundException)
-            {
-                MessageBox.Show("Couldn't start exalt. Make sure the path is correct and it contains the RotMG Exalt.exe file.");
+                snackbar.Show(message);
             }
             else
             {
-                MessageBox.Show("Something went wrong.", e.Exception.Message, MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
+
             e.Handled = true;
         }
     }
